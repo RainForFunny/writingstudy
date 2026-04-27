@@ -7,10 +7,10 @@
       <p>{{ writingStore.continueContent }}</p>
     </div>
     <div class="hint-actions">
-      <el-button type="success" size="small" @click="handleAccept">
+      <el-button type="success" size="small" :loading="refreshing" @click="handleAccept">
         ✅ 采用此续写
       </el-button>
-      <el-button size="small" @click="handleRefresh">
+      <el-button size="small" :loading="refreshing" @click="handleRefresh">
         🔄 换一个版本
       </el-button>
     </div>
@@ -18,17 +18,35 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useWritingStore } from '../../stores/writingStore'
+import { getAiAssist } from '../../api/ai'
 
 const writingStore = useWritingStore()
+const refreshing = ref(false)
 
 function handleAccept() {
   writingStore.acceptContinue()
 }
 
-function handleRefresh() {
-  // 触发重新生成续写
-  // 实际项目中调用AI接口
+async function handleRefresh() {
+  if (refreshing.value) return
+  refreshing.value = true
+  try {
+    const res = await getAiAssist({
+      assistType: 'CONTINUE',
+      topicContent: writingStore.topicContent,
+      currentContent: writingStore.content
+    })
+    if (res.code === 200 && res.data) {
+      // 替换续写内容，不清除 showContinue 状态
+      writingStore.continueContent = res.data.continueText || ''
+    }
+  } catch (e) {
+    console.error('重新生成续写失败:', e)
+  } finally {
+    refreshing.value = false
+  }
 }
 </script>
 

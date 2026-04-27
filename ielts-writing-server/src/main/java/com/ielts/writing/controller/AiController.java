@@ -4,6 +4,7 @@ import com.ielts.writing.model.dto.request.AiAssistRequest;
 import com.ielts.writing.model.dto.request.ReviewRequest;
 import com.ielts.writing.model.dto.response.AiAssistResponse;
 import com.ielts.writing.model.dto.response.ReviewResponse;
+import com.ielts.writing.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,27 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AiController {
 
+    private final AiService aiService;
+
     /**
-     * 写作辅助（审题/模板/词汇/衔接）
+     * 写作辅助（审题思路/段落模板/词汇表达/衔接过渡/续写提示）
+     * 前端 /ai/assist 同时用于辅助和续写，通过 assistType 区分：
+     * - CONTINUE → 返回 continueText
+     * - 其他 → 返回 assistContent
      */
     @PostMapping("/assist")
     public ResponseEntity<Map<String, Object>> assist(@RequestBody AiAssistRequest request) {
-        // Phase 1: return mock data, will integrate real AI in Phase 3
         Map<String, Object> data = new HashMap<>();
         data.put("assistType", request.getAssistType());
-        data.put("content", "这里是" + request.getAssistType() + "辅助内容（模拟数据）");
+
+        if ("CONTINUE".equals(request.getAssistType().toString())) {
+            AiAssistResponse response = aiService.continueWriting(request);
+            data.put("continueText", response.getAssistText());
+            data.put("stage", response.getStage());
+        } else {
+            AiAssistResponse response = aiService.assist(request);
+            data.put("assistContent", response.getAssistText());
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -33,13 +46,14 @@ public class AiController {
     }
 
     /**
-     * 续写提示
+     * AI随机出题
      */
-    @PostMapping("/continue")
-    public ResponseEntity<Map<String, Object>> continueWriting(@RequestBody AiAssistRequest request) {
+    @GetMapping("/random-topic")
+    public ResponseEntity<Map<String, Object>> randomTopic() {
+        String topic = aiService.generateRandomTopic();
+
         Map<String, Object> data = new HashMap<>();
-        data.put("continueText", "On the one hand, proponents of this view argue that...");
-        data.put("stage", "BODY_EXPAND");
+        data.put("topicContent", topic);
 
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -49,32 +63,38 @@ public class AiController {
     }
 
     /**
-     * AI点评
+     * AI智能点评
      */
     @PostMapping("/review")
     public ResponseEntity<Map<String, Object>> review(@RequestBody ReviewRequest request) {
+        ReviewResponse reviewResponse = aiService.review(request);
+
         Map<String, Object> scores = new HashMap<>();
-        scores.put("ta", 6.5);
-        scores.put("cc", 6.0);
-        scores.put("lr", 6.5);
-        scores.put("gra", 7.0);
+        scores.put("ta", reviewResponse.getScores().getTa());
+        scores.put("cc", reviewResponse.getScores().getCc());
+        scores.put("lr", reviewResponse.getScores().getLr());
+        scores.put("gra", reviewResponse.getScores().getGra());
 
         List<Map<String, Object>> annotations = new ArrayList<>();
-        Map<String, Object> ann = new HashMap<>();
-        ann.put("type", "GRAMMAR");
-        ann.put("severity", "HIGH");
-        ann.put("position", "第2段，第3句");
-        ann.put("original", "There are many reason...");
-        ann.put("suggestion", "There are many reasons...");
-        ann.put("explanation", "主语是复数，谓语动词应用复数形式");
-        annotations.add(ann);
+        if (reviewResponse.getAnnotations() != null) {
+            for (ReviewResponse.AnnotationInfo ann : reviewResponse.getAnnotations()) {
+                Map<String, Object> annMap = new HashMap<>();
+                annMap.put("type", ann.getType());
+                annMap.put("severity", ann.getSeverity());
+                annMap.put("position", ann.getPosition());
+                annMap.put("original", ann.getOriginal());
+                annMap.put("suggestion", ann.getSuggestion());
+                annMap.put("explanation", ann.getExplanation());
+                annotations.add(annMap);
+            }
+        }
 
         Map<String, Object> data = new HashMap<>();
         data.put("scores", scores);
-        data.put("overallComment", "整体来看，文章结构清晰，论点充分。需要在语法准确性和词汇多样性方面进一步提升。");
+        data.put("overallComment", reviewResponse.getOverallComment());
         data.put("annotations", annotations);
-        data.put("upgrade05", "This is the +0.5 upgraded version...");
-        data.put("upgrade10", "This is the +1.0 upgraded version...");
+        data.put("upgrade05", reviewResponse.getUpgrade05());
+        data.put("upgrade10", reviewResponse.getUpgrade10());
 
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);

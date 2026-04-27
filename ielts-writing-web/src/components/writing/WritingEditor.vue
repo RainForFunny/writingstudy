@@ -6,21 +6,20 @@
       :rows="15"
       placeholder="在此处开始写作..."
       resize="vertical"
-      @input="handleInput"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useWritingStore } from '../../stores/writingStore'
 
 const writingStore = useWritingStore()
-const content = ref(writingStore.content)
 
-function handleInput() {
-  writingStore.setContent(content.value)
-}
+const content = computed({
+  get: () => writingStore.content,
+  set: (val) => writingStore.setContent(val)
+})
 </script>
 
 <style scoped>

@@ -34,6 +34,7 @@ jwt:
 # AI Configuration (placeholder for Phase 3)
 ai:
   api-key: ${AI_API_KEY:sk-822b8572f7fc418ca0c39fe7de4e8887}
-  model: gpt-3.5-turbo
+  model: deepseek-v4-flash
   max-tokens: 2048
   temperature: 0.7
+  api-url: https://api.deepseek.com/v1/chat/completions

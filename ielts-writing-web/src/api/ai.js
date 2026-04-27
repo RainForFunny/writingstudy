@@ -11,3 +11,7 @@ export function getAiContinue(data) {
 export function submitAiReview(data) {
   return request.post('/ai/review', data)
 }
+
+export function getRandomTopic() {
+  return request.get('/ai/random-topic')
+}

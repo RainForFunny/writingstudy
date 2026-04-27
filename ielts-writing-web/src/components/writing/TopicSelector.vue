@@ -8,7 +8,7 @@
       @input="handleInput"
     />
     <div class="topic-actions">
-      <el-button type="primary" size="small" @click="handleRandom">
+      <el-button type="primary" size="small" :loading="loading" @click="handleRandom">
         🎲 AI随机出题
       </el-button>
       <el-button size="small" @click="handleClear">
@@ -21,25 +21,30 @@
 <script setup>
 import { ref } from 'vue'
 import { useWritingStore } from '../../stores/writingStore'
+import { getRandomTopic } from '../../api/ai'
 
 const writingStore = useWritingStore()
 const topicContent = ref(writingStore.topicContent)
+const loading = ref(false)
 
 function handleInput() {
   writingStore.setTopic(topicContent.value)
 }
 
-function handleRandom() {
-  const demoTopics = [
-    'Some people think that governments should spend more money on railways rather than roads. Others believe the opposite. Discuss both views and give your own opinion.',
-    'In many countries, people are living in a "throw-away" society where they use things once and then discard them. What are the causes of this problem? What measures can be taken to solve it?',
-    'Some people believe that unpaid community service should be a compulsory part of high school programs. To what extent do you agree or disagree?',
-    'The development of technology has changed the way people interact with each other. Do the advantages outweigh the disadvantages?',
-    'Many people believe that formal education should start at an early age. Others think children should play and learn through play. Discuss both views and give your opinion.'
-  ]
-  const random = demoTopics[Math.floor(Math.random() * demoTopics.length)]
-  topicContent.value = random
-  writingStore.setTopic(random)
+async function handleRandom() {
+  loading.value = true
+  try {
+    const res = await getRandomTopic()
+    if (res.code === 200 && res.data) {
+      const topic = res.data.topicContent
+      topicContent.value = topic
+      writingStore.setTopic(topic)
+    }
+  } catch (e) {
+    console.error('AI随机出题失败:', e)
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleClear() {

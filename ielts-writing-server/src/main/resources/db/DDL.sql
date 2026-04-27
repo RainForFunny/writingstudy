@@ -3,7 +3,7 @@
 -- Version: 1.0
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS `ielts_writing` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ielts_writing` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
 USE `ielts_writing`;
 
@@ -19,7 +19,7 @@ CREATE TABLE `user` (
   `target_score` DECIMAL(2,1) DEFAULT NULL COMMENT '目标分数',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
 -- ============================================
 -- 文章表
@@ -41,7 +41,7 @@ CREATE TABLE `essay` (
   INDEX `idx_user_id` (`user_id`),
   INDEX `idx_status` (`status`),
   CONSTRAINT `fk_essay_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文章表';
 
 -- ============================================
 -- 点评表
@@ -59,7 +59,7 @@ CREATE TABLE `essay_review` (
   `upgrade_10` MEDIUMTEXT DEFAULT NULL COMMENT '+1.0分润色版',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   CONSTRAINT `fk_review_essay` FOREIGN KEY (`essay_id`) REFERENCES `essay` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='点评表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='点评表';
 
 -- ============================================
 -- 弱点记录表
@@ -75,7 +75,7 @@ CREATE TABLE `weakness_record` (
   INDEX `idx_user_category` (`user_id`, `error_category`),
   CONSTRAINT `fk_weakness_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_weakness_essay` FOREIGN KEY (`essay_id`) REFERENCES `essay` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='弱点记录表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='弱点记录表';
 
 -- ============================================
 -- 题库表
@@ -90,7 +90,7 @@ CREATE TABLE `topic` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   INDEX `idx_category` (`category`),
   INDEX `idx_active` (`is_active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='题库表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='题库表';
 
 -- ============================================
 -- 初始题库数据（IELTS Task 2 示例题目）

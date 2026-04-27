@@ -8,7 +8,17 @@
       <div class="header-right">
         <el-button text @click="$router.push('/archive')">文章归档</el-button>
         <el-button text @click="$router.push('/weakness')">弱点追踪</el-button>
-        <el-button text @click="$router.push('/login')">登录</el-button>
+        <template v-if="isLoggedIn">
+          <el-dropdown @command="handleLogout">
+            <span class="user-name">{{ username }}</span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+        <el-button v-else text @click="$router.push('/')">登录</el-button>
       </div>
     </header>
 
@@ -46,7 +56,10 @@
 </template>
 
 <script setup>
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useWritingStore } from '../stores/writingStore'
+import { useUserStore } from '../stores/userStore'
 import TopicSelector from '../components/writing/TopicSelector.vue'
 import WritingEditor from '../components/writing/WritingEditor.vue'
 import AssistToolbar from '../components/writing/AssistToolbar.vue'
@@ -54,7 +67,22 @@ import HelperPanel from '../components/writing/HelperPanel.vue'
 import ContinueHint from '../components/writing/ContinueHint.vue'
 import ReviewPanel from '../components/review/ReviewPanel.vue'
 
+const router = useRouter()
 const writingStore = useWritingStore()
+const userStore = useUserStore()
+const isLoggedIn = computed(() => !!userStore.token)
+const username = computed(() => userStore.userInfo?.username || '')
+
+function handleLogout() {
+  userStore.clearToken()
+  router.push('/')
+}
+
+onMounted(() => {
+  if (userStore.token && !userStore.userInfo) {
+    userStore.fetchUserInfo()
+  }
+})
 </script>
 
 <style scoped>
@@ -78,6 +106,19 @@ const writingStore = useWritingStore()
   font-size: 20px;
   font-weight: 600;
   color: #409eff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  color: #409eff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .main-container {

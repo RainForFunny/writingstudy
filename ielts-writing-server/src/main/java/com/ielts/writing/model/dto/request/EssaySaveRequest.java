@@ -15,6 +15,8 @@ public class EssaySaveRequest {
 
     private String content;
 
+    private String status;
+
     private String writingMode;
 
     private Integer timeLimit;

@@ -29,7 +29,7 @@ public class TopicController {
         if (category != null) {
             wrapper.eq(Topic::getCategory, category);
         }
-        wrapper.orderByAsc("RAND()").last("LIMIT 1");
+        wrapper.last("ORDER BY RAND() LIMIT 1");
 
         Topic topic = topicRepository.selectOne(wrapper);
 

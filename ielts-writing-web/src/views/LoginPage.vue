@@ -59,7 +59,7 @@ async function handleLogin() {
     const res = await login(loginForm.value)
     if (res.code === 200) {
       userStore.setToken(res.data.token)
-      router.push('/')
+      router.push('/writing')
     }
   } catch (e) {
     console.error('登录失败', e)

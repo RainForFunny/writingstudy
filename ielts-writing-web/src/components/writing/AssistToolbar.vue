@@ -5,6 +5,8 @@
         v-for="btn in assistButtons"
         :key="btn.type"
         :type="activeType === btn.type ? 'primary' : 'default'"
+        :loading="loadingType === btn.type"
+        :disabled="!!loadingType && loadingType !== btn.type"
         @click="handleAssist(btn.type)"
       >
         {{ btn.icon }} {{ btn.label }}
@@ -100,7 +102,7 @@ async function handleSubmit() {
       content: writingStore.content
     })
     if (res.code === 200) {
-      reviewStore.setReview(res.data)
+      reviewStore.setReview(res.data, writingStore.content, writingStore.topicContent)
     } else {
       ElMessage.error('获取AI点评失败')
     }

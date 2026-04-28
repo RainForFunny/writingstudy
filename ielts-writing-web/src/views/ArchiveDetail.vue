@@ -19,25 +19,60 @@
       </el-card>
 
       <el-card v-if="review" class="review-card">
-        <h3>📊 AI 点评</h3>
-        <div class="review-section">
-          <p class="overall">{{ review.overallComment }}</p>
-          <p class="score-tip">* AI评估仅供参考</p>
+        <h3 class="review-card-title">📊 AI 点评报告</h3>
+
+        <ScoreOverview :scores="scoresData" />
+
+        <div class="overall-comment">
+          <h4 class="section-title">总体评价</h4>
+          <p>{{ review.overallComment }}</p>
         </div>
+
+        <AnnotationBlock :annotations="annotationList" />
+        <UpgradeBlock 
+          :upgrade05="review.upgrade05 || ''" 
+          :upgrade10="review.upgrade10 || ''" 
+        />
+
+        <p class="score-tip">* AI评估仅供参考，不等同于真实雅思考官评分</p>
       </el-card>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getEssay } from '../api/essay'
+import { getEssay, getEssayReview } from '../api/essay'
+import ScoreOverview from '../components/review/ScoreOverview.vue'
+import AnnotationBlock from '../components/review/AnnotationBlock.vue'
+import UpgradeBlock from '../components/review/UpgradeBlock.vue'
 
 const route = useRoute()
 const loading = ref(false)
 const essay = ref(null)
 const review = ref(null)
+
+const scoresData = computed(() => {
+  if (!review.value) return {}
+  return {
+    ta: review.value.scoreTa,
+    cc: review.value.scoreCc,
+    lr: review.value.scoreLr,
+    gra: review.value.scoreGra
+  }
+})
+
+const annotationList = computed(() => {
+  if (!review.value || !review.value.annotations) return []
+  try {
+    return typeof review.value.annotations === 'string'
+      ? JSON.parse(review.value.annotations)
+      : review.value.annotations
+  } catch {
+    return []
+  }
+})
 
 onMounted(async () => {
   await fetchDetail()
@@ -46,10 +81,14 @@ onMounted(async () => {
 async function fetchDetail() {
   loading.value = true
   try {
-    const res = await getEssay(route.params.id)
-    if (res.code === 200) {
-      essay.value = res.data.essay
-      review.value = res.data.review
+    const essayRes = await getEssay(route.params.id)
+    if (essayRes.code === 200) {
+      essay.value = essayRes.data
+    }
+
+    const reviewRes = await getEssayReview(route.params.id)
+    if (reviewRes.code === 200 && reviewRes.data) {
+      review.value = reviewRes.data
     }
   } catch (e) {
     console.error('获取文章详情失败', e)
@@ -118,11 +157,24 @@ function formatDate(dateStr) {
   border-top: 1px solid #ebeef5;
 }
 
-.review-section {
-  margin-top: 12px;
+.review-card-title {
+  font-size: 18px;
+  margin: 0 0 20px;
+  color: #303133;
 }
 
-.overall {
+.overall-comment {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #303133;
+}
+
+.overall-comment p {
   font-size: 14px;
   line-height: 1.7;
   color: #606266;
@@ -131,6 +183,6 @@ function formatDate(dateStr) {
 .score-tip {
   font-size: 12px;
   color: #c0c4cc;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 </style>

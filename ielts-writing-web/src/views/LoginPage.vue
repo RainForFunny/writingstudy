@@ -46,6 +46,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import { login, register } from '../api/user'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -60,9 +61,12 @@ async function handleLogin() {
     if (res.code === 200) {
       userStore.setToken(res.data.token)
       router.push('/writing')
+    } else {
+      ElMessage.error(res.message || '登录失败')
     }
   } catch (e) {
     console.error('登录失败', e)
+    ElMessage.error(e.response?.data?.message || e.message || '登录失败，请检查网络连接')
   }
 }
 
@@ -70,10 +74,14 @@ async function handleRegister() {
   try {
     const res = await register(registerForm.value)
     if (res.code === 200) {
+      ElMessage.success('注册成功，请登录')
       activeTab.value = 'login'
+    } else {
+      ElMessage.error(res.message || '注册失败')
     }
   } catch (e) {
     console.error('注册失败', e)
+    ElMessage.error(e.response?.data?.message || e.message || '注册失败，请检查网络连接')
   }
 }
 </script>

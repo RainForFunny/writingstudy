@@ -19,3 +19,11 @@ export function getArchiveList(params) {
 export function deleteEssay(id) {
   return request.delete(`/essays/${id}`)
 }
+
+export function saveEssayWithReview(data) {
+  return request.post('/essays/save-with-review', data)
+}
+
+export function getEssayReview(id) {
+  return request.get(`/essays/${id}/review`)
+}

@@ -8,10 +8,10 @@
       @input="handleInput"
     />
     <div class="topic-actions">
-      <el-button type="primary" size="small" :loading="loading" @click="handleRandom">
+      <el-button type="primary" size="small" :loading="loading" :disabled="loading" @click="handleRandom">
         🎲 AI随机出题
       </el-button>
-      <el-button size="small" @click="handleClear">
+      <el-button size="small" :disabled="loading" @click="handleClear">
         🗑️ 清空
       </el-button>
     </div>

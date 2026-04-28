@@ -2,6 +2,7 @@ package com.ielts.writing.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ielts.writing.model.dto.request.EssaySaveRequest;
+import com.ielts.writing.model.dto.request.EssaySaveWithReviewRequest;
 import com.ielts.writing.model.dto.response.EssayArchiveResponse;
 import com.ielts.writing.model.entity.Essay;
 import com.ielts.writing.model.entity.EssayReview;
@@ -113,6 +114,23 @@ public class EssayController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/save-with-review")
+    public ResponseEntity<Map<String, Object>> saveEssayWithReview(Authentication authentication,
+                                                                     @RequestBody EssaySaveWithReviewRequest request) {
+        Long userId = (Long) authentication.getPrincipal();
+        Essay essay = essayService.saveEssayWithReview(userId, request);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", essay.getId());
+        data.put("status", essay.getStatus());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", 200);
+        result.put("message", "保存成功");
+        result.put("data", data);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/{id}/review")
     public ResponseEntity<Map<String, Object>> getEssayReview(Authentication authentication,
                                                                @PathVariable Long id) {
@@ -125,7 +143,7 @@ public class EssayController {
             data.put("scoreTa", review.getScoreTa());
             data.put("scoreCc", review.getScoreCc());
             data.put("scoreLr", review.getScoreLr());
-            data.put("ScoreGra", review.getScoreGra());
+            data.put("scoreGra", review.getScoreGra());
             data.put("overallComment", review.getOverallComment());
             data.put("annotations", review.getAnnotations());
             data.put("upgrade05", review.getUpgrade05());

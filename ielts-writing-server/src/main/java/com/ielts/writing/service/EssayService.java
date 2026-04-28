@@ -13,4 +13,5 @@ public interface EssayService {
     IPage<EssayArchiveResponse> getArchiveList(Long userId, int page, int size);
     void deleteEssay(Long essayId, Long userId);
     EssayReview getEssayReview(Long essayId);
+    Essay saveEssayWithReview(Long userId, com.ielts.writing.model.dto.request.EssaySaveWithReviewRequest request);
 }

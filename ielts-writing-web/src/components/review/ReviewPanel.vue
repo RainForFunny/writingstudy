@@ -4,9 +4,14 @@
       <div class="review-panel">
         <div class="panel-header">
           <h2>📊 AI 点评报告</h2>
-          <el-button text @click="reviewStore.clearReview()">
-            ✕ 关闭
-          </el-button>
+          <div class="header-actions">
+            <el-button type="primary" :loading="saving" @click="handleSave">
+              💾 保存文章
+            </el-button>
+            <el-button text @click="reviewStore.clearReview()">
+              ✕ 关闭
+            </el-button>
+          </div>
         </div>
         <div class="panel-body" v-loading="reviewStore.loading">
           <ScoreOverview :scores="reviewStore.scores" />
@@ -28,12 +33,42 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useReviewStore } from '../../stores/reviewStore'
+import { saveEssayWithReview } from '../../api/essay'
 import ScoreOverview from './ScoreOverview.vue'
 import AnnotationBlock from './AnnotationBlock.vue'
 import UpgradeBlock from './UpgradeBlock.vue'
 
 const reviewStore = useReviewStore()
+const saving = ref(false)
+
+async function handleSave() {
+  saving.value = true
+  try {
+    const res = await saveEssayWithReview({
+      topicContent: reviewStore.topicContent,
+      content: reviewStore.essayContent,
+      scores: reviewStore.scores,
+      overallComment: reviewStore.overallComment,
+      annotations: reviewStore.annotations,
+      upgrade05: reviewStore.upgrade05,
+      upgrade10: reviewStore.upgrade10
+    })
+    if (res.code === 200) {
+      ElMessage.success('文章及AI点评已保存')
+      reviewStore.clearReview()
+    } else {
+      ElMessage.error('保存失败，请重试')
+    }
+  } catch (e) {
+    console.error('保存文章失败:', e)
+    ElMessage.error('保存失败，请稍后重试')
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -69,6 +104,12 @@ const reviewStore = useReviewStore()
 .panel-header h2 {
   margin: 0;
   font-size: 18px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .panel-body {

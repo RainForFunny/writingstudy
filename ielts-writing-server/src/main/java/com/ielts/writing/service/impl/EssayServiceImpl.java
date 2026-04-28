@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ielts.writing.exception.BusinessException;
 import com.ielts.writing.model.dto.request.EssaySaveRequest;
+import com.ielts.writing.model.dto.request.EssaySaveWithReviewRequest;
 import com.ielts.writing.model.dto.response.EssayArchiveResponse;
 import com.ielts.writing.model.entity.Essay;
 import com.ielts.writing.model.entity.EssayReview;
@@ -13,8 +14,10 @@ import com.ielts.writing.repository.EssayReviewRepository;
 import com.ielts.writing.service.EssayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -97,6 +100,52 @@ public class EssayServiceImpl implements EssayService {
             throw new BusinessException("文章不存在或无权限删除");
         }
         essayRepository.deleteById(essayId);
+    }
+
+    @Override
+    @Transactional
+    public Essay saveEssayWithReview(Long userId, EssaySaveWithReviewRequest request) {
+        // 1. Save essay
+        Essay essay = Essay.builder()
+                .userId(userId)
+                .topicContent(request.getTopicContent())
+                .content(request.getContent())
+                .wordCount(countWords(request.getContent()))
+                .status("REVIEWED")
+                .writingMode(request.getWritingMode() != null ? request.getWritingMode() : "FREE")
+                .startedAt(LocalDateTime.now())
+                .submittedAt(LocalDateTime.now())
+                .build();
+
+        essayRepository.insert(essay);
+
+        // 2. Save review
+        Map<String, Double> scores = request.getScores();
+        EssayReview review = new EssayReview();
+        review.setEssayId(essay.getId());
+        if (scores != null) {
+            review.setScoreTa(scores.get("ta"));
+            review.setScoreCc(scores.get("cc"));
+            review.setScoreLr(scores.get("lr"));
+            review.setScoreGra(scores.get("gra"));
+        }
+        review.setOverallComment(request.getOverallComment());
+
+        // Serialize annotations & upgrades to JSON string
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            if (request.getAnnotations() != null) {
+                review.setAnnotations(mapper.writeValueAsString(request.getAnnotations()));
+            }
+            review.setUpgrade05(request.getUpgrade05());
+            review.setUpgrade10(request.getUpgrade10());
+        } catch (Exception e) {
+            throw new BusinessException("序列化点评数据失败");
+        }
+
+        essayReviewRepository.insert(review);
+
+        return essay;
     }
 
     @Override

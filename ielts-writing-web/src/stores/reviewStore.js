@@ -9,13 +9,17 @@ export const useReviewStore = defineStore('review', () => {
   const upgrade05 = ref('')
   const upgrade10 = ref('')
   const overallComment = ref('')
+  const essayContent = ref('')
+  const topicContent = ref('')
 
-  function setReview(data) {
+  function setReview(data, essayContentText, topicText) {
     scores.value = data.scores
     annotations.value = data.annotations || []
     upgrade05.value = data.upgrade05 || ''
     upgrade10.value = data.upgrade10 || ''
     overallComment.value = data.overallComment || ''
+    essayContent.value = essayContentText || ''
+    topicContent.value = topicText || ''
     showReview.value = true
   }
 
@@ -27,11 +31,14 @@ export const useReviewStore = defineStore('review', () => {
     upgrade05.value = ''
     upgrade10.value = ''
     overallComment.value = ''
+    essayContent.value = ''
+    topicContent.value = ''
   }
 
   return {
     showReview, loading, scores, annotations,
     upgrade05, upgrade10, overallComment,
+    essayContent, topicContent,
     setReview, clearReview
   }
 })

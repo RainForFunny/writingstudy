@@ -7,7 +7,7 @@ export const useWritingStore = defineStore('writing', () => {
   const content = ref('')
   const wordCount = computed(() => {
     if (!content.value) return 0
-    return content.value.replace(/\s/g, '').length
+    return content.value.trim().split(/\s+/).length
   })
   const assistType = ref(null)      // 当前辅助类型
   const assistContent = ref('')     // 辅助内容

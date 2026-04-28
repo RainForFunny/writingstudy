@@ -132,7 +132,9 @@ public class AiServiceImpl implements AiService {
                 3. 严格按照JSON格式返回，不要包含```json等标记
                 """, request.getTopicContent(), request.getContent());
 
+        log.info("AI点评 prompt: {}", prompt);
         String reply = callDeepSeek(prompt);
+        log.info("AI点评 reply: {}", reply);
         return parseReviewResponse(reply);
     }
 

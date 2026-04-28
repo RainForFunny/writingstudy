@@ -71,7 +71,10 @@ CREATE TABLE `weakness_record` (
   `error_type` VARCHAR(50) NOT NULL COMMENT '错误类型：ARTICLE_MISUSE冠词误用/S_V_AGREEMENT主谓不一致/等',
   `error_category` VARCHAR(20) DEFAULT NULL COMMENT '错误大类：GRAMMAR语法/VOCABULARY词汇/LOGIC逻辑',
   `frequency` INT DEFAULT 1 COMMENT '累计出现次数',
+  `last_occurred_at` DATETIME DEFAULT NULL COMMENT '最近一次出现时间',
+  `suggestion` VARCHAR(500) DEFAULT NULL COMMENT '改进建议',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   INDEX `idx_user_category` (`user_id`, `error_category`),
   CONSTRAINT `fk_weakness_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_weakness_essay` FOREIGN KEY (`essay_id`) REFERENCES `essay` (`id`) ON DELETE SET NULL
@@ -106,3 +109,11 @@ INSERT INTO `topic` (`category`, `content`, `task_type`, `difficulty`, `is_activ
 ('ENVIRONMENT', 'The increase in the production of consumer goods is causing damage to the natural environment. What are the causes of this, and what solutions can you suggest?', 'T2', 'MEDIUM', 1),
 ('SOCIETY', 'In some cultures, children are often told that they can achieve anything if they try hard enough. What are the advantages and disadvantages of this message?', 'T2', 'MEDIUM', 1),
 ('TECHNOLOGY', 'Some people think that artificial intelligence will replace most human jobs in the future. Others believe that AI will create new job opportunities. Discuss both views and give your own opinion.', 'T2', 'HARD', 1);
+
+-- ============================================
+-- 弱点记录表升级脚本（已有表时运行）
+-- ============================================
+-- ALTER TABLE `weakness_record`
+--   ADD COLUMN `last_occurred_at` DATETIME DEFAULT NULL COMMENT '最近一次出现时间' AFTER `frequency`,
+--   ADD COLUMN `suggestion` VARCHAR(500) DEFAULT NULL COMMENT '改进建议' AFTER `last_occurred_at`,
+--   ADD COLUMN `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' AFTER `created_at`;

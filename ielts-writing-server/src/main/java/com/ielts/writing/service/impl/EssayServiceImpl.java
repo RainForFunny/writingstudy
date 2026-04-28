@@ -12,6 +12,7 @@ import com.ielts.writing.model.entity.EssayReview;
 import com.ielts.writing.repository.EssayRepository;
 import com.ielts.writing.repository.EssayReviewRepository;
 import com.ielts.writing.service.EssayService;
+import com.ielts.writing.service.WeaknessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class EssayServiceImpl implements EssayService {
 
     private final EssayRepository essayRepository;
     private final EssayReviewRepository essayReviewRepository;
+    private final WeaknessService weaknessService;
 
     @Override
     public Essay saveEssay(Long userId, EssaySaveRequest request) {
@@ -144,6 +146,9 @@ public class EssayServiceImpl implements EssayService {
         }
 
         essayReviewRepository.insert(review);
+
+        // 3. Trigger weakness analysis
+        weaknessService.analyzeWeakness(userId, essay.getId(), review);
 
         return essay;
     }

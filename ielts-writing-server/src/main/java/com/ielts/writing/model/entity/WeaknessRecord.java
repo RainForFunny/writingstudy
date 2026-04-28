@@ -20,6 +20,13 @@ public class WeaknessRecord {
 
     private Integer frequency;
 
+    private LocalDateTime lastOccurredAt;
+
+    private String suggestion;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedAt;
 }
